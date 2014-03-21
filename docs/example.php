@@ -5,6 +5,7 @@ date_default_timezone_set('UTC');
 set_time_limit(0);
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../docs/config.php';
 
 use Ocli\Command\Module\CreateCommand;
 use Symfony\Component\Console\Application;

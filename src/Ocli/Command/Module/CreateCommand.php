@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Ocli\ModuleFactory;
 
 class CreateCommand extends Command
 {
@@ -16,18 +17,21 @@ class CreateCommand extends Command
             ->setName('module:create')
             ->setDescription('Do you wanna create some hotsie-totsie module?')
             ->addArgument(
-                'name',
+                'path',
                 InputArgument::REQUIRED,
-                'Name of the module?'
+                'Path of the module?'
             )
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $name = $input->getArgument('name');
-        $text = 'Created '. $name . '.';
+        $path = $input->getArgument('path');
+        $theme = $input->getArgument('theme');
 
-        $output->writeln($text);
+        $factory = new ModuleFactory($path, $theme);
+        $factory->createFiles();
+
+        $output->writeln('Module has been created.');
     }
 }
