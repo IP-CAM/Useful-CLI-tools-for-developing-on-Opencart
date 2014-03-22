@@ -21,6 +21,11 @@ class CreateCommand extends Command
                 InputArgument::REQUIRED,
                 'Path of the module?'
             )
+            ->addArgument(
+                'theme',
+                InputArgument::REQUIRED,
+                'Current theme?'
+            )
         ;
     }
 
