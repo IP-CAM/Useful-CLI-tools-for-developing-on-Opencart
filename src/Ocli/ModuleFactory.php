@@ -14,9 +14,13 @@ class ModuleFactory
     private $paths;
 
     /**
-     * @var FileCreator
+     * @var \Symfony\Component\Filesystem\Filesystem
      */
-    private $creator;
+    private $filesystem;
+    /**
+     * @var \Symfony\Component\Finder\Finder
+     */
+    private $finder;
 
     /**
      * @var string
@@ -33,17 +37,19 @@ class ModuleFactory
         $this->creator = new FileCreator();
         $this->path = $path;
         $this->theme = $theme;
+        $this->filesystem = new Filesystem();
+        $this->finder = new Finder();
 
         $ds = DIRECTORY_SEPARATOR;
         $this->paths = [
-            'adminController'   => DIR_APPLICATION . 'controller' . $ds,
-            /*'adminLanguage'     => DIR_APPLICATION . 'language' . $ds,
-            'adminModel'        => DIR_APPLICATION . 'model' . $ds,
-            'adminView'         => DIR_APPLICATION . 'view' . $ds . 'template' . $ds,
+            'adminController' => DIR_APPLICATION . 'controller' . $ds,
+            'adminModel'      => DIR_APPLICATION . 'model' . $ds,
+            /*'adminView'         => DIR_APPLICATION . 'view' . $ds . 'template' . $ds,
+            'adminLanguage'     => DIR_APPLICATION . 'language' . $ds,
             'catalogController' => DIR_APPLICATION . '../catalog' . $ds . 'controller' . $ds,
-            'catalogLanguage'   => DIR_APPLICATION . '../catalog' . $ds . 'language' . $ds,
             'catalogModel'      => DIR_APPLICATION . '../catalog' . $ds . 'model' . $ds,
-            'catalogView'       => DIR_APPLICATION . '../catalog' . $ds . 'view' . $ds . 'theme' . $ds,*/
+            'catalogView'       => DIR_APPLICATION . '../catalog' . $ds . 'view' . $ds . 'theme' . $ds,
+            'catalogLanguage'   => DIR_APPLICATION . '../catalog' . $ds . 'language' . $ds,*/
         ];
     }
 
@@ -57,10 +63,7 @@ class ModuleFactory
 
     public function createAdminController($name)
     {
-        $fs = new Filesystem();
-        $finder = new Finder();
-
-        $files = $finder->files()->in(__DIR__ . '/Template/')->name($name . '.*');
+        $files = $this->searchTemplateFile($name);
         foreach ($files as $file) {
             $template = $file->getContents();
             $template = str_replace(
@@ -70,15 +73,58 @@ class ModuleFactory
                     '$moduleTemplatePath',
                 ],
                 [
-                    'ModuleTest',
-                    'module/test',
+                    $this->getModuleName(),
+                    $this->path,
                     'module/test.tpl',
                 ],
                 $template
             );
 
-            $fs->mkdir($this->paths[$name], 0644);
-            $fs->dumpFile($this->paths[$name] . $this->path . '.php', $template, 0644);
+            $this->writeFile($name, $template);
         }
+    }
+
+    public function createAdminModel($name)
+    {
+        $files = $this->searchTemplateFile($name);
+        foreach ($files as $file) {
+            $template = $file->getContents();
+            $template = str_replace('$moduleModelName', $this->getModuleName(), $template);
+            $this->writeFile($name, $template);
+        }
+    }
+
+    /**
+     * @param $name string
+     * @return \Symfony\Component\Finder\SplFileInfo[]
+     */
+    private function searchTemplateFile($name)
+    {
+        return $this->finder->files()->in(__DIR__ . '/Template/')->name($name . '.*');
+    }
+
+    /**
+     * @param $name string
+     * @param $data string
+     * @return void
+     */
+    private function writeFile($name, $data)
+    {
+        $this->filesystem->mkdir($this->paths[$name], 0644);
+        $this->filesystem->dumpFile($this->paths[$name] . $this->path . '.php', $data, 0644);
+    }
+
+    /**
+     * @return string
+     */
+    private function getModuleName()
+    {
+        $name = '';
+        $parts = explode('/', $this->path);
+        foreach ($parts as $part) {
+            $name .= ucfirst($part);
+        }
+
+        return $name;
     }
 }
