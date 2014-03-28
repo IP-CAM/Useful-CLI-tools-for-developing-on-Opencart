@@ -42,14 +42,14 @@ class ModuleFactory
 
         $ds = DIRECTORY_SEPARATOR;
         $this->paths = [
-            'adminController' => DIR_APPLICATION . 'controller' . $ds,
-            'adminModel'      => DIR_APPLICATION . 'model' . $ds,
-            /*'adminView'         => DIR_APPLICATION . 'view' . $ds . 'template' . $ds,
-            'adminLanguage'     => DIR_APPLICATION . 'language' . $ds,
+            'adminController'   => DIR_APPLICATION . 'controller' . $ds,
+            'adminModel'        => DIR_APPLICATION . 'model' . $ds,
+            //'adminView'         => DIR_APPLICATION . 'view' . $ds . 'template' . $ds,
+            //'adminLanguage'     => DIR_APPLICATION . 'language' . $ds,
             'catalogController' => DIR_APPLICATION . '../catalog' . $ds . 'controller' . $ds,
-            'catalogModel'      => DIR_APPLICATION . '../catalog' . $ds . 'model' . $ds,
+            //'catalogModel'      => DIR_APPLICATION . '../catalog' . $ds . 'model' . $ds,
             'catalogView'       => DIR_APPLICATION . '../catalog' . $ds . 'view' . $ds . 'theme' . $ds,
-            'catalogLanguage'   => DIR_APPLICATION . '../catalog' . $ds . 'language' . $ds,*/
+            //'catalogLanguage'   => DIR_APPLICATION . '../catalog' . $ds . 'language' . $ds,
         ];
     }
 
@@ -90,6 +90,29 @@ class ModuleFactory
         foreach ($files as $file) {
             $template = $file->getContents();
             $template = str_replace('$moduleModelName', $this->getModuleName(), $template);
+            $this->writeFile($name, $template);
+        }
+    }
+
+    public function createCatalogController($name)
+    {
+        $files = $this->searchTemplateFile($name);
+        foreach ($files as $file) {
+            $template = $file->getContents();
+            $template = str_replace(
+                [
+                    '$moduleControllerName',
+                    '$modulePath',
+                    '$moduleTemplatePath',
+                ],
+                [
+                    $this->getModuleName(),
+                    $this->path,
+                    'module/test.tpl',
+                ],
+                $template
+            );
+
             $this->writeFile($name, $template);
         }
     }
